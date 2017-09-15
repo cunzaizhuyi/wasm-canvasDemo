@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<time.h> 
 #include <emscripten.h>
 char randomVector[2];
 int EMSCRIPTEN_KEEPALIVE Random(int m, int n)
@@ -38,7 +39,7 @@ int EMSCRIPTEN_KEEPALIVE randomInTwoSection(int m, int n) {
 }
 
 char* EMSCRIPTEN_KEEPALIVE randomGenerator(int x, int y, int r) {
-	
+	srand((unsigned)time(0));
 	int randomX = randomInTwoSection(1, 10);
 	int randomY = randomInTwoSection(1, 10);
 	if (x - r <= 0) {

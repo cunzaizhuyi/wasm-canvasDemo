@@ -117,153 +117,151 @@
 	<textarea class="emscripten" id="output" rows="8"></textarea>
 	<hr>
 	<canvas id="canvas-random"></canvas>
-	<script type='text/javascript'>
-		var statusElement = document.getElementById('status');
-		var progressElement = document.getElementById('progress');
-		var spinnerElement = document.getElementById('spinner');
-		
-		var Module = {
-			preRun: [],
-			postRun: [],
-			print: (function () {
-				var element = document.getElementById('output');
-				if (element) element.value = ''; // clear browser cache
-				return function (text) {
-					if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-					// These replacements are necessary if you render to raw HTML
-					//text = text.replace(/&/g, "&amp;");
-					//text = text.replace(/</g, "&lt;");
-					//text = text.replace(/>/g, "&gt;");
-					//text = text.replace('\n', '<br>', 'g');
-					console.log(text);
-					if (element) {
-						element.value += text + "\n";
-						element.scrollTop = element.scrollHeight; // focus on bottom
-					}
-				};
-			})(),
-			printErr: function (text) {
-				if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-				if (0) { // XXX disabled for safety typeof dump == 'function') {
-					dump(text + '\n'); // fast, straight to the real console
-				} else {
-					console.error(text);
-				}
-			},
-			canvas: (function () {
-				var canvas = document.getElementById('canvas');
-				
-				// As a default initial behavior, pop up an alert when webgl context is lost. To make your
-				// application robust, you may want to override this behavior before shipping!
-				// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
-				canvas.addEventListener("webglcontextlost", function (e) {
-					alert('WebGL context lost. You will need to reload the page.');
-					e.preventDefault();
-				}, false);
-				
-				return canvas;
-			})(),
-			setStatus: function (text) {
-				if (!Module.setStatus.last) Module.setStatus.last = {time: Date.now(), text: ''};
-				if (text === Module.setStatus.text) return;
-				var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-				var now = Date.now();
-				if (m && now - Date.now() < 30) return; // if this is a progress update, skip it if too soon
-				if (m) {
-					text = m[1];
-					progressElement.value = parseInt(m[2]) * 100;
-					progressElement.max = parseInt(m[4]) * 100;
-					progressElement.hidden = false;
-					spinnerElement.hidden = false;
-				} else {
-					progressElement.value = null;
-					progressElement.max = null;
-					progressElement.hidden = true;
-					if (!text) spinnerElement.hidden = true;
-				}
-				statusElement.innerHTML = text;
-			},
-			totalDependencies: 0,
-			monitorRunDependencies: function (left) {
-				this.totalDependencies = Math.max(this.totalDependencies, left);
-				Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-			}
-		};
-		Module.setStatus('Downloading...');
-		window.onerror = function () {
-			Module.setStatus('Exception thrown, see JavaScript console');
-			spinnerElement.style.display = 'none';
-			Module.setStatus = function (text) {
-				if (text) Module.printErr('[post-exception status] ' + text);
-			};
-		};
-		//内容
-		Module.onRuntimeInitialized = function () {
-			work();
-			console.log(Module);
-			
-		};
-		function work() {
-			//初始化参数
-			var canvas = document.getElementById("canvas-random");
-			var width = canvas.width = canvas.clientWidth;
-			var height = canvas.height = canvas.clientHeight;
-			var ctx = canvas.getContext("2d");
-			ctx.strokeStyle = "blue";
-			ctx.fillStyle = "red";
-			var xPos = 50;
-			var yPos = 50;
-			var radius = 50;
-			
-			//在适当的位置绘制圆形
-			function run(ctx) {
-				//清空画布
-				ctx.clearRect(0, 0, width, height);
-				
-				//用js函数传递随机移动参数
-				var vector = Module.ccall('randomGenerator', // name of C function
-					'number', // return type
-					['number', 'number', 'number'], // argument types
-					[xPos, yPos, radius]); // arguments
-				//参数使用
-				xPos += getValue(vector);
-				yPos += getValue(vector + 1);
-				
-				//越界纠正
-				//越界纠正
-				var pos = beyondBorderRectify(xPos, yPos, radius);
-				xPos = pos[0];
-				yPos = pos[1];
-				
-				//绘制圆形
-				ctx.beginPath();
-				ctx.arc(xPos, yPos, radius, 0, 2 * Math.PI, true);
-				ctx.stroke();
-				ctx.closePath();
-				ctx.fill();
-			}
-			
-			setInterval(function () {
-				run(ctx);
-			}, 20);
-			//纵横方向是否到达边界
-			function beyondBorderRectify(xPos, yPos, radius) {
-				if (xPos <= radius) {
-					xPos = radius;
-				} else if (xPos >= width - radius) {
-					xPos = width - radius;
-				}
-				if (yPos <= radius) {
-					yPos = radius;
-				} else if (yPos >= height - radius) {
-					yPos = height - radius;
-				}
-				return [xPos, yPos];
-			}
-			
-		}
+<script type='text/javascript'>
+	var statusElement = document.getElementById('status');
+	var progressElement = document.getElementById('progress');
+	var spinnerElement = document.getElementById('spinner');
 	
-	</script>
-	<script async type="text/javascript" src="random.js"></script>
+	var Module = {
+		preRun: [],
+		postRun: [],
+		print: (function () {
+			var element = document.getElementById('output');
+			if (element) element.value = ''; // clear browser cache
+			return function (text) {
+				if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+				// These replacements are necessary if you render to raw HTML
+				//text = text.replace(/&/g, "&amp;");
+				//text = text.replace(/</g, "&lt;");
+				//text = text.replace(/>/g, "&gt;");
+				//text = text.replace('\n', '<br>', 'g');
+				console.log(text);
+				if (element) {
+					element.value += text + "\n";
+					element.scrollTop = element.scrollHeight; // focus on bottom
+				}
+			};
+		})(),
+		printErr: function (text) {
+			if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+			if (0) { // XXX disabled for safety typeof dump == 'function') {
+				dump(text + '\n'); // fast, straight to the real console
+			} else {
+				console.error(text);
+			}
+		},
+		canvas: (function () {
+			var canvas = document.getElementById('canvas');
+			
+			// As a default initial behavior, pop up an alert when webgl context is lost. To make your
+			// application robust, you may want to override this behavior before shipping!
+			// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+			canvas.addEventListener("webglcontextlost", function (e) {
+				alert('WebGL context lost. You will need to reload the page.');
+				e.preventDefault();
+			}, false);
+			
+			return canvas;
+		})(),
+		setStatus: function (text) {
+			if (!Module.setStatus.last) Module.setStatus.last = {time: Date.now(), text: ''};
+			if (text === Module.setStatus.text) return;
+			var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+			var now = Date.now();
+			if (m && now - Date.now() < 30) return; // if this is a progress update, skip it if too soon
+			if (m) {
+				text = m[1];
+				progressElement.value = parseInt(m[2]) * 100;
+				progressElement.max = parseInt(m[4]) * 100;
+				progressElement.hidden = false;
+				spinnerElement.hidden = false;
+			} else {
+				progressElement.value = null;
+				progressElement.max = null;
+				progressElement.hidden = true;
+				if (!text) spinnerElement.hidden = true;
+			}
+			statusElement.innerHTML = text;
+		},
+		totalDependencies: 0,
+		monitorRunDependencies: function (left) {
+			this.totalDependencies = Math.max(this.totalDependencies, left);
+			Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+		}
+	};
+	Module.setStatus('Downloading...');
+	window.onerror = function () {
+		Module.setStatus('Exception thrown, see JavaScript console');
+		spinnerElement.style.display = 'none';
+		Module.setStatus = function (text) {
+			if (text) Module.printErr('[post-exception status] ' + text);
+		};
+	};
+	//内容
+	Module.onRuntimeInitialized = function () {
+		work();
+	};
+	function work() {
+		//初始化参数
+		var canvas = document.getElementById("canvas-random");
+		var width = canvas.width = canvas.clientWidth;
+		var height = canvas.height = canvas.clientHeight;
+		var ctx = canvas.getContext("2d");
+		ctx.strokeStyle = "blue";
+		ctx.fillStyle = "red";
+		var xPos = 50;
+		var yPos = 50;
+		var radius = 50;
+		
+		//在适当的位置绘制圆形
+		function run(ctx) {
+			//清空画布
+			ctx.clearRect(0, 0, width, height);
+			
+			//用js函数传递随机移动参数
+			var vector = Module.ccall('randomGenerator', // name of C function
+				'number', // return type
+				['number', 'number', 'number'], // argument types
+				[xPos, yPos, radius]); // arguments
+			//参数使用
+			xPos += getValue(vector);
+			yPos += getValue(vector + 1);
+			
+			//越界纠正
+			//越界纠正
+			var pos = beyondBorderRectify(xPos, yPos, radius);
+			xPos = pos[0];
+			yPos = pos[1];
+			
+			//绘制圆形
+			ctx.beginPath();
+			ctx.arc(xPos, yPos, radius, 0, 2 * Math.PI, true);
+			ctx.stroke();
+			ctx.closePath();
+			ctx.fill();
+		}
+		
+		setInterval(function () {
+			run(ctx);
+		}, 20);
+		//纵横方向是否到达边界
+		function beyondBorderRectify(xPos, yPos, radius) {
+			if (xPos <= radius) {
+				xPos = radius;
+			} else if (xPos >= width - radius) {
+				xPos = width - radius;
+			}
+			if (yPos <= radius) {
+				yPos = radius;
+			} else if (yPos >= height - radius) {
+				yPos = height - radius;
+			}
+			return [xPos, yPos];
+		}
+		
+	}
+
+</script>
+<script async type="text/javascript" src="random.js"></script>
 </body>
 </html>
