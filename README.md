@@ -9,7 +9,7 @@
 Demo同时实现了纯JS（即不使用WebAssembly）和WebAssembly两个版本，都在Demo地址中。
 
 ### 2、Demo地址
-github :
+github : https://github.com/cunzaizhuyi/wasm-canvasDemo
 
 ### 3、Demo目录结构
 因为demo比较简单，也没有什么js库依赖，所以本库的所有demo都是按照目录区分的（一个目录是一个demo），而没有使用诸如src、doc、dist
