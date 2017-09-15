@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>用js函数传递随机移动参数</title>
+	<style>
+		#canvas{
+			width:800px;
+			height:600px;
+			background-color: #ccc;
+		}
+	</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+	//初始化参数
+	var canvas = document.getElementById("canvas");
+	var width = canvas.width = canvas.clientWidth;
+	var height = canvas.height = canvas.clientHeight;
+	var ctx = canvas.getContext("2d");
+	ctx.strokeStyle = "blue";
+	ctx.fillStyle = "red";
+	var xPos = 50;
+	var yPos = 50;
+	var radius =50;
+	
+	//在适当的位置绘制圆形
+	function run(ctx) {
+		//清空画布
+		ctx.clearRect(0, 0, width, height);
+
+		//用js函数传递随机移动参数
+		var vector = randomGenerator(xPos, yPos, radius);
+		//参数使用
+		xPos += vector[0];
+		yPos += vector[1];
+		
+		//越界纠正
+		//越界纠正
+		var pos = beyondBorderRectify(xPos, yPos, radius);
+		xPos = pos[0];
+		yPos = pos[1];
+		
+		//绘制圆形
+		ctx.beginPath();
+		ctx.arc(xPos, yPos, radius, 0, 2*Math.PI, true);
+		ctx.stroke();
+		ctx.closePath();
+		ctx.fill();
+	}
+	setInterval(function () {
+		run(ctx);
+	},20);
+	
+	//随机数生成
+	function randomGenerator(x,y,r) {
+		function r1() {
+			var r1 =0;
+			var mid = Math.floor(Math.random()*10+1);
+			if(mid > 5){
+				r1 = Math.floor(Math.random()*5+25);
+			}else{
+				r1 = Math.floor(Math.random()*5-30);
+			}
+			return r1;
+		}
+		var randomX = r1();
+		var randomY = r1();
+		if(x-r <= 0){
+			randomX = Math.floor(Math.random()*5+25);
+			
+		}else if(x + r >= 800){
+			randomX = Math.floor(Math.random()*5-30);
+			
+		}else if(y - r <= 0){
+			randomY = Math.floor(Math.random()*5+25);
+			
+		}else if(y + r >= 600){
+			randomY = Math.floor(Math.random()*5-30);
+		}
+		return [randomX,randomY]
+	}
+	//纵横方向是否到达边界
+	function beyondBorderRectify(xPos,yPos,radius) {
+		if(xPos <= radius){
+			xPos = radius ;
+		}else if(xPos >= width - radius){
+			xPos = width - radius;
+		}
+		if(yPos <= radius){
+			yPos = radius;
+		}else if(yPos >= height - radius){
+			yPos = height - radius ;
+		}
+		return [xPos,yPos];
+	}
+	
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+emcc -o random.html random.c -O3 -s WASM=1 --shell-file shell_minimal.html

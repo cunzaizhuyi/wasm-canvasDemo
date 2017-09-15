@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>webassembly API</title>
+	<style>
+		#canvas{
+			width:1500px;
+			height:800px;
+			background-color: #ccc;
+		}
+	</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+	function loadWebAssembly (path, imports = {}) {
+		return fetch(path)
+			.then(response => response.arrayBuffer())
+			.then(buffer => WebAssembly.compile(buffer))
+			.then(module => {
+				imports.env = imports.env || {}
+				//新添加的,解决LinkError报错 以及TypeError报错
+				imports.env.DYNAMICTOP_PTR = imports.env.DYNAMICTOP_PTR||0;
+				imports.env.tempDoublePtr = imports.env.tempDoublePtr||0;
+				imports.env.ABORT = imports.env.ABORT||0;
+				imports.global = imports.global||{NaN:5,Infinity:6};
+				imports.env.abortStackOverflow = imports.env.abortStackOverflow||new Function();
+				
+				// 开辟内存空间
+				imports.env.memoryBase = imports.env.memoryBase || 0
+				if (!imports.env.memory) {
+					imports.env.memory = new WebAssembly.Memory({ initial: 256 })
+				}
+				
+				// 创建变量映射表
+				imports.env.tableBase = imports.env.tableBase || 0
+				if (!imports.env.table) {
+					// 在 MVP 版本中 element 只能是 "anyfunc"
+					imports.env.table = new WebAssembly.Table({ initial: 0, element: 'anyfunc' })
+				}
+				// 创建 WebAssembly 实例
+				return new WebAssembly.Instance(module, imports)
+			})
+	}
+	var canvas = document.getElementById("canvas");
+	canvas.width=1500;
+	canvas.height=800;
+	var ctx = canvas.getContext("2d");
+	ctx.strokeStyle = "blue";
+	ctx.fillStyle = "red";
+
+	var startPoint = 0;
+	loadWebAssembly('./mathz.wasm')
+		.then(instance => {
+			var speed = instance.exports._speed;
+			const addSpeed = instance.exports._addSpeed;
+			var speedV = speed();
+			//speedV = addSpeed(speedV,50);
+			
+			function run(ctx) {
+				ctx.clearRect(0,0,1500,800);
+				//cxt.top+=speed;
+				startPoint+=speedV;
+				ctx.beginPath();
+				ctx.arc(startPoint,240,50,0,2*Math.PI,true);
+				ctx.stroke();
+				ctx.closePath();
+				ctx.fill();
+			}
+			setInterval(function () {
+				run(ctx);
+			},20);
+		});
+</script>
+</body>
+</html>
